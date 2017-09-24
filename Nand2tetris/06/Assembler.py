@@ -3,7 +3,6 @@ for assembling the hdl codes with symbols.
 """
 
 from Parser import Parser
-from hdl_tokens import command_type, command_content
 from Code import *
 from SymbolTable import SymbolTable
 
@@ -21,15 +20,13 @@ class Assembler:
 		p = Parser(path)
 		with open(dest, 'w') as target:
 			for cm in self.extract_labels(p):
-				tag, parts = command_type(cm), command_content(cm)
+				tag, parts = cm
 				if tag == 'a_command':
 					bits = complete_A(self.get_address(parts))
 					target.write(bits + '\n')
 				elif tag == 'c_command':
-					bits = complete_C(parts['dest'], parts['comp'], parts['jump'])
+					bits = complete_C(parts[0], parts[1], parts[2])
 					target.write(bits + '\n')
-				elif tag == 'l_command':
-					pass
 		self._initial()
 
 	def extract_labels(self, p):
@@ -39,10 +36,14 @@ class Assembler:
 		rest_commands = []
 		while p.has_more_commands():
 			p.advance()
-			if p.command_type == 'l_command':
+			cm_type = p.command_type
+			if cm_type == 'l_command':
 				self.symbols.add_entry(p.symbol, rom_address)
-			else:
-				rest_commands.append(p.current)
+			elif cm_type == 'a_command':
+				rest_commands.append((cm_type, p.symbol))
+				rom_address += 1
+			elif cm_type == 'c_command':
+				rest_commands.append((cm_type, (p.dest, p.comp, p.jump)))
 				rom_address += 1
 		return rest_commands
 
