@@ -4,7 +4,7 @@ to asm language in another file."""
 import os
 from Parser import Parser
 from CodeWriter import CodeWriter
-from vm_primitives import *
+from vm_definitions import *
 
 def is_vm_file(filename):
     return filename.endswith('.vm')

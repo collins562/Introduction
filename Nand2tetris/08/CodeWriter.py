@@ -8,7 +8,7 @@ for translating vm command into asm language and write it into a new file.
 """
 
 import os
-from vm_primitives import *
+from vm_definitions import *
 
 class CodeWriter:
     def __init__(self, out_path):
@@ -146,7 +146,7 @@ class CodeWriter:
         self._push_to_stack('D')                    # *SP=D, SP++
 
     def write_pop(self, seg, index):
-        if vm_memo_seg(seg):
+        if is_memo_seg(seg):
             self._assign('SP', 'M', 'M-1')          # SP--
             self._get_memo_address(seg, index)      # A = seg+index
             self.write_c_command('A', dest='D')     # D = A
@@ -160,10 +160,10 @@ class CodeWriter:
 
     # for getting SEGMENT address with or without offset
     def _get_seg_address(self, seg, index):
-        return (self._get_memo_address(seg, index) if vm_memo_seg(seg)   else
-                self._get_reg_address(seg, index)  if vm_reg_seg(seg)    else
-                self._get_static_address(index)    if vm_static_seg(seg) else
-                self._get_const(index)             if vm_const_seg(seg)  else None)
+        return (self._get_memo_address(seg, index) if is_memo_seg(seg)   else
+                self._get_reg_address(seg, index)  if is_reg_seg(seg)    else
+                self._get_static_address(index)    if is_static_seg(seg) else
+                self._get_const(index)             if is_const_seg(seg)  else None)
 
     def _get_memo_address(self, seg, index):
         self._assign(MEMO_SYMBOLS[seg], 'A', 'M')   # A = seg
