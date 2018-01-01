@@ -7,6 +7,23 @@
 #define TESTTIME 1
 #define MaxPath  20
 
+#define TRIALS 1
+#define M(op)                                       \
+    printf("+------------+----------+\n");          \
+    printf("| TRIALS: %2d | run time |\n", TRIALS);  \
+    printf("+------------+----------+\n");          \
+    printf("| %-10s |", #op);                       \
+    timesum = 0;                                    \
+    for (ex = 0; ex < TRIALS; ex++) {               \
+        start = clock();                            \
+        op(filepath);                               \
+        t = clock()-start;                          \
+        timesum += t;                               \
+    }                                               \
+    nans = timesum / (TRIALS * CLOCKS_PER_SEC);     \
+    printf(" %.4fs |\n", nans);                     \
+    printf("+------------+----------+\n");
+
 #define OK           0
 #define FOPEN_ERROR  1
 #define FSEEK_ERROR  2
@@ -19,25 +36,17 @@ void print_help(void);
 void process_args(char *first);
 void process_error(int err_code);
 
-char *TempFiles[5];
-FILE *TempPtr[5];
-
-char *GetTmpName(int index)
-{
-    char *tmppath;
-
-    tmppath = malloc(sizeof(char) * MaxPath);
-    sprintf(tmppath, "fsort_tmpfile_%d", index);
-    return TempFiles[index] = tmppath;
-}
+char *TempFiles[10];
+FILE *TempPtr[10];
 
 int Pass(FILE *ifp, int index)
 {
     int i, j, Low = UPPERBOUND * index, High = Low + UPPERBOUND;
-    char *tmppath;
+    char *tmppath = malloc(sizeof(char) * MaxPath);
     FILE *tmp;
 
-    tmppath = GetTmpName(index);
+    sprintf(tmppath, "temp%d", index);
+    TempFiles[index] = tmppath;
 
     if ((tmp = fopen(tmppath, "w+")) == NULL)
         return FOPEN_ERROR;
@@ -121,15 +130,13 @@ double FnTime(char *filepath)
     return TotalClocks / TESTTIME / CLOCKS_PER_SEC;
 }
 
-static char *filepath = "random_numbers.txt";
-
 void test_filesort(void)
 {
-    printf("+-----------+----------+\n");
-    printf("|   Tool    | run time |\n");
-    printf("+-----------+----------+\n");
-    printf("| MultiPass | %.4f s |\n", FnTime(filepath));
-    printf("+-----------+----------+\n");
+    int ex, t, start;
+    double timesum, nans;
+    char *filepath = "random_numbers.txt";
+
+    M(MultiPass);
 }
 
 /* for user interface */

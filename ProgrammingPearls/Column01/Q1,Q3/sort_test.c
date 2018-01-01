@@ -6,6 +6,20 @@
 #define TESTTIME 10
 #define NUMSIZE  1000000
 
+#define TRIALS 10
+#define T(s) printf("%s (n=%d)\n", s, TRIALS);
+#define M(op)                                   \
+    printf("| %-10s |", #op);                   \
+    timesum = 0;                                \
+    for (ex = 0; ex < TRIALS; ex++) {           \
+        start = clock();                        \
+        op(filepath);                           \
+        t = clock()-start;                      \
+        timesum += t;                           \
+    }                                           \
+    nans = timesum / (TRIALS * CLOCKS_PER_SEC); \
+    printf(" %.5f |\n", nans);
+
 void BitSort(char *filepath)
 {
     int i;
@@ -63,29 +77,14 @@ void QuickSort(char *filepath)
     fclose(ofp);
 }
 
-double FnTime(char *filepath, void (*fn)(char*))
-{
-    int i;
-    double TotalClocks = 0, Start, End;
-
-    for (i = 0; i < TESTTIME; i++) {
-        Start = clock();
-        fn(filepath);
-        End = clock();
-        TotalClocks += End - Start;
-    }
-
-    return TotalClocks / TESTTIME / CLOCKS_PER_SEC;
-}
-
-static char *filepath = "random_numbers.txt";
 
 int main()
 {
-    printf("+---------+----------+\n");
-    printf("|  Tool   | run time |\n");
-    printf("+---------+----------+\n");
-    printf("| BitSort | %.5fs |\n", FnTime(filepath, BitSort));
-    printf("| QSort   | %.5fs |\n", FnTime(filepath, QuickSort));
-    printf("+---------+----------+\n");
+    int ex, start, t;
+    double timesum, nans;
+    char *filepath = "random_numbers.txt";
+
+    printf("| Fn         | T       |\n");
+    M(BitSort);
+    M(QuickSort);
 }

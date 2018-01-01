@@ -16,6 +16,24 @@
 #define TEMPFILE1 "filesort_temp_1.txt"
 #define TEMPFILE2 "filesort_temp_2.txt"
 
+#define TRIALS 1
+#define T(s) printf("%s (n=%d)\n", s, TRIALS);
+#define M(op)                                       \
+    printf("+------------+----------+\n");          \
+    printf("| TRIALS: %2d | run time |\n", TRIALS);  \
+    printf("+------------+----------+\n");          \
+    printf("| %-10s |", #op);                       \
+    timesum = 0;                                    \
+    for (ex = 0; ex < TRIALS; ex++) {               \
+        start = clock();                            \
+        op(filepath);                               \
+        t = clock()-start;                          \
+        timesum += t;                               \
+    }                                               \
+    nans = timesum / (TRIALS * CLOCKS_PER_SEC);     \
+    printf(" %.4fs |\n", nans);                     \
+    printf("+------------+----------+\n");
+
 int TwoPass(char *filepath);
 
 void print_help(void);
@@ -77,30 +95,13 @@ int TwoPass(char *filepath)
     return OK;
 }
 
-double FnTime(char *filepath)
-{
-    int i;
-    double TotalClocks = 0, Start, End;
-
-    for (i = 0; i < TESTTIME; i++) {
-        Start = clock();
-        TwoPass(filepath);
-        End = clock();
-        TotalClocks += End - Start;
-    }
-
-    return TotalClocks / TESTTIME / CLOCKS_PER_SEC;
-}
-
-static char *filepath = "Random_Nums.txt";
-
 void test_twopass(void)
 {
-    printf("+-----------+----------+\n");
-    printf("|   Tool    | run time |\n");
-    printf("+-----------+----------+\n");
-    printf("| MultiPass | %.3f s |\n", FnTime(filepath));
-    printf("+-----------+----------+\n");
+    int ex, t, start;
+    double timesum, nans;
+    char *filepath = "Random_Nums.txt";
+
+    M(TwoPass);
 }
 
 /* for user interface */
